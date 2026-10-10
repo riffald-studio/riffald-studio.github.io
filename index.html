@@ -1,0 +1,293 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>riffald</title>
+<meta name="description" content="riffald is a small studio making games and apps.">
+<meta name="theme-color" content="#121110">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;1,300;1,400&family=IBM+Plex+Mono:wght@400&display=swap" rel="stylesheet">
+<style>
+:root{
+  --graphite:#121110; --ash:#1C1A19; --smoke:#2A2725; --fog:#8A8580;
+  --bone:#D9D4CC; --leather:#3B2A20; --oxblood:#4A1416;
+  --ember:#E8691E; --glow:#FF8A3D;
+  --x:50vw; --y:40vh; --r:240px;
+  --serif:"Cormorant Garamond", "Cormorant", Garamond, "Times New Roman", serif;
+  --mono:"IBM Plex Mono", ui-monospace, Menlo, Consolas, monospace;
+  box-sizing:border-box;
+  padding-top:env(safe-area-inset-top,0px);
+  padding-bottom:env(safe-area-inset-bottom,0px);
+}
+*,*::before,*::after{box-sizing:inherit}
+html{scroll-padding-top:env(safe-area-inset-top,0px);background:var(--graphite)}
+body{
+  margin:0; background:var(--graphite); color:var(--bone);
+  font-family:var(--serif); font-size:1.25rem; line-height:1.6;
+  -webkit-font-smoothing:antialiased; overflow-x:hidden;
+}
+a{color:inherit;text-decoration:none;border-bottom:1px solid var(--smoke);transition:color .6s,border-color .6s}
+a:hover{color:var(--glow);border-color:var(--ember)}
+:focus-visible{outline:1px solid var(--ember);outline-offset:4px}
+
+/* ---- atmosphere ---- */
+.lamp,.glow,.vignette,.grain{position:fixed;inset:0;pointer-events:none}
+.lamp{
+  z-index:0; opacity:.95;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='420' height='420'%3E%3Cfilter id='l' x='0' y='0' width='100%25' height='100%25'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.04' numOctaves='4' seed='7' stitchTiles='stitch' result='n'/%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='2' seed='3' stitchTiles='stitch' result='g'/%3E%3CfeComposite in='n' in2='g' operator='arithmetic' k2='0.65' k3='0.35'/%3E%3CfeDiffuseLighting lighting-color='%23533a2b' surfaceScale='3.2' diffuseConstant='1'%3E%3CfeDistantLight azimuth='225' elevation='40'/%3E%3C/feDiffuseLighting%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23l)'/%3E%3C/svg%3E");
+  background-size:420px 420px;
+  -webkit-mask-image:radial-gradient(circle var(--r) at var(--x) var(--y),#000 0%,rgba(0,0,0,.55) 40%,transparent 100%);
+          mask-image:radial-gradient(circle var(--r) at var(--x) var(--y),#000 0%,rgba(0,0,0,.55) 40%,transparent 100%);
+}
+.glow{z-index:0;background:radial-gradient(circle calc(var(--r) * 1.3) at var(--x) var(--y),rgba(255,138,61,.075),rgba(74,20,22,.05) 45%,transparent 75%)}
+.vignette{z-index:3;background:radial-gradient(ellipse at 50% 45%,transparent 38%,rgba(74,20,22,.16) 72%,rgba(0,0,0,.72) 100%)}
+.grain{
+  z-index:4; opacity:.09; mix-blend-mode:overlay; inset:-50%;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cfilter id='g'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23g)'/%3E%3C/svg%3E");
+  animation:grain 1.2s steps(6) infinite;
+}
+@keyframes grain{
+  0%{transform:translate(0,0)} 20%{transform:translate(-3%,2%)} 40%{transform:translate(2%,-4%)}
+  60%{transform:translate(-4%,-2%)} 80%{transform:translate(3%,3%)} 100%{transform:translate(0,0)}
+}
+
+/* things only the light can show */
+.secret{
+  -webkit-mask-image:radial-gradient(circle calc(var(--r) * .8) at var(--sx,-9999px) var(--sy,-9999px),#000 15%,transparent 100%);
+          mask-image:radial-gradient(circle calc(var(--r) * .8) at var(--sx,-9999px) var(--sy,-9999px),#000 15%,transparent 100%);
+}
+
+/* ---- frame ---- */
+.top{
+  position:fixed; z-index:5; top:env(safe-area-inset-top,0px); left:0; right:0;
+  display:flex; justify-content:space-between; align-items:center;
+  padding:clamp(1.2rem,3vw,2.2rem) clamp(1.4rem,5vw,4rem);
+}
+.sigil{display:block;width:44px;height:44px;border:0}
+.sigil svg{width:100%;height:100%;overflow:visible}
+.sigil .ember{fill:var(--ember);animation:breathe 4.5s ease-in-out infinite}
+@keyframes breathe{0%,100%{opacity:.75;filter:drop-shadow(0 0 2px var(--ember))}50%{opacity:1;filter:drop-shadow(0 0 7px var(--glow))}}
+
+main{position:relative;z-index:2}
+.wrap{max-width:1120px;margin:0 auto;padding:0 clamp(1.4rem,5vw,4rem)}
+
+/* ---- hero ---- */
+.hero{position:relative;min-height:100svh;display:flex;align-items:center;overflow:hidden}
+.engrave{
+  position:absolute; left:50%; top:52%; transform:translate(-50%,-50%);
+  font-weight:300; font-size:clamp(7rem,27vw,25rem); line-height:1; letter-spacing:-.02em;
+  color:#0d0a09; white-space:nowrap; user-select:none;
+  text-shadow:0 1px 0 rgba(255,138,61,.16),0 -1px 1px rgba(0,0,0,.9),0 0 30px rgba(74,20,22,.5);
+}
+.hero h1{
+  position:relative; margin:0; max-width:14ch;
+  font-weight:300; font-size:clamp(2.8rem,7vw,6rem); line-height:1.02; letter-spacing:-.015em;
+}
+.hero p{position:relative;margin:2rem 0 0;max-width:32ch;color:var(--fog);font-size:clamp(1.2rem,1.8vw,1.45rem)}
+.hint{position:absolute;left:0;right:0;bottom:clamp(1.6rem,4vh,3rem);font-family:var(--mono);font-size:.78rem;color:var(--fog);opacity:.6}
+
+/* load sequence: things surface out of fog */
+.fog{opacity:0;filter:blur(14px);transition:opacity 1.6s cubic-bezier(.2,.6,.2,1) var(--d,0s),filter 2s cubic-bezier(.2,.6,.2,1) var(--d,0s)}
+.ready .fog{opacity:1;filter:blur(0)}
+.ready .hint.fog{opacity:.6}
+
+/* ---- creed ---- */
+.creed{padding:22vh 0 18vh}
+.creed p{margin:0 0 1.4rem;font-style:italic;font-weight:300;font-size:clamp(1.6rem,3.2vw,2.5rem);line-height:1.3;max-width:24ch}
+.creed p:nth-child(2){margin-left:clamp(0rem,12vw,10rem)}
+.creed p:nth-child(3){margin-left:clamp(0rem,24vw,20rem);color:var(--fog)}
+
+/* ---- records ---- */
+.record{display:grid;grid-template-columns:minmax(0,5fr) minmax(0,4fr);gap:clamp(2.5rem,7vw,7rem);align-items:center;padding:12vh 0;border-top:1px solid var(--smoke)}
+.no{font-family:var(--mono);font-size:.82rem;color:var(--ember);margin:0 0 1.2rem}
+.record h2{margin:0 0 1.4rem;font-weight:400;font-size:clamp(2.4rem,5vw,4rem);line-height:1.05}
+.record .body{margin:0 0 1.4rem;max-width:34ch}
+.record .meta{margin:0;color:var(--fog);font-size:1.1rem;max-width:36ch}
+
+.board{
+  display:grid; grid-template-columns:repeat(7,1fr); gap:clamp(4px,.8vw,8px);
+  padding:clamp(10px,1.6vw,16px); background:rgba(28,26,25,.75);
+  border:1px solid var(--smoke); border-radius:14px; max-width:420px; width:100%; justify-self:end;
+}
+.cell{aspect-ratio:1;border-radius:22%}
+.cell.e{border:1px solid rgba(138,133,128,.12)}
+.cell.f{
+  background:linear-gradient(150deg,color-mix(in srgb,var(--c) 70%,#fff 30%) 0%,var(--c) 55%,color-mix(in srgb,var(--c) 75%,#000 25%) 100%);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.35),inset 0 -2px 4px rgba(0,0,0,.25);
+  filter:grayscale(1) brightness(.32);
+  transition:filter 1.6s cubic-bezier(.2,.6,.2,1) var(--d),box-shadow 1.6s ease var(--d);
+}
+.board.lit .cell.f{
+  filter:none;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.4),inset 0 -2px 4px rgba(0,0,0,.2),0 0 16px color-mix(in srgb,var(--c) 40%,transparent);
+}
+
+.redact{display:inline-block;height:.72em;width:7.5ch;background:var(--smoke);vertical-align:baseline;border-radius:2px}
+.redact.short{width:4ch}
+.void{justify-self:end;width:100%;max-width:420px;aspect-ratio:1;border:1px solid var(--smoke);border-radius:14px;display:grid;place-items:center;color:#0d0a09;font-size:clamp(5rem,12vw,9rem);font-weight:300;text-shadow:0 1px 0 rgba(255,138,61,.18),0 -1px 1px rgba(0,0,0,.9)}
+
+/* ---- footer ---- */
+footer{position:relative;z-index:2;border-top:1px solid var(--smoke);padding:10vh 0 6vh}
+.foot{display:flex;flex-wrap:wrap;gap:1.2rem 2.4rem;align-items:baseline;justify-content:space-between}
+.foot nav{display:flex;gap:2rem;flex-wrap:wrap}
+.foot small{font-family:var(--mono);font-size:.78rem;color:var(--fog)}
+.whisper{margin:14vh 0 0;text-align:center;font-style:italic;color:var(--glow);font-size:1.35rem}
+
+@media (max-width:760px){
+  .record{grid-template-columns:1fr}
+  .board,.void{justify-self:start}
+  .creed p:nth-child(n){margin-left:0}
+  .creed p:nth-child(2){margin-left:1.5rem}
+  .creed p:nth-child(3){margin-left:3rem}
+}
+@media (prefers-reduced-motion:reduce){
+  .grain,.sigil .ember{animation:none}
+  .fog{transition:none;opacity:1;filter:none}
+  .cell.f{transition:none}
+}
+</style>
+</head>
+<body>
+<div class="lamp" aria-hidden="true"></div>
+<div class="glow" aria-hidden="true"></div>
+
+<header class="top">
+  <a class="sigil" href="#" aria-label="riffald">
+    <svg viewBox="0 0 44 44" fill="none" stroke="#D9D4CC" stroke-width="1" aria-hidden="true">
+      <circle cx="22" cy="22" r="20.5" opacity=".55"/>
+      <path d="M22 4.2 L37.4 30.9 L6.6 30.9 Z" opacity=".85"/>
+      <path d="M22 1.5 V42.5" opacity=".35"/>
+      <circle cx="22" cy="22.2" r="2.1" stroke="none" class="ember"/>
+    </svg>
+  </a>
+</header>
+
+<main>
+  <section class="hero">
+    <div class="engrave secret" aria-hidden="true">riffald</div>
+    <div class="wrap">
+      <h1 class="fog" style="--d:.3s">Your eyes will adjust.</h1>
+      <p class="fog" style="--d:1.4s">riffald is a small studio. few hands, quick ones.</p>
+    </div>
+    <div class="hint fog wrap" style="--d:2.6s" id="hint">Move the light.</div>
+  </section>
+
+  <section class="creed wrap" aria-label="About">
+    <p>The world here is grey.</p>
+    <p>We keep the colour for what we make.</p>
+    <p>Everything else waits in the dark until it is ready.</p>
+  </section>
+
+  <section class="record wrap" id="chroma-blocks" aria-labelledby="r1">
+    <div>
+      <p class="no">Record 001, a game</p>
+      <h2 id="r1">Chroma Blocks</h2>
+      <p class="body">Place the blocks. Gather the same colours together. Clear them before the board fills up.</p>
+      <p class="meta">Coming soon to the App Store and Google Play. Three difficulty levels, eleven languages.</p>
+    </div>
+    <div class="board" id="board" role="img" aria-label="Chroma Blocks game board"></div>
+  </section>
+
+  <section class="record wrap" aria-labelledby="r2">
+    <div>
+      <p class="no">Record 002</p>
+      <h2 id="r2"><span class="redact" aria-label="Untitled"></span> <span class="redact short" aria-hidden="true"></span></h2>
+      <p class="body">Not yet.</p>
+    </div>
+    <div class="void secret" aria-hidden="true">?</div>
+  </section>
+</main>
+
+<footer>
+  <div class="wrap">
+    <div class="foot">
+      <nav aria-label="Footer">
+        <a href="chroma-blocks/privacy.html">Privacy</a>
+        <a href="chroma-blocks/support.html">Support</a>
+        <a href="mailto:support@riffald.com">support@riffald.com</a>
+      </nav>
+      <small>© 2026 riffald</small>
+    </div>
+    <p class="whisper secret">If you found this, keep it to yourself.</p>
+  </div>
+</footer>
+
+<div class="vignette" aria-hidden="true"></div>
+<div class="grain" aria-hidden="true"></div>
+
+<script>
+(function(){
+  const root = document.documentElement;
+  const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  /* ---------- touch hint ---------- */
+  if (!matchMedia('(pointer:fine)').matches){
+    const h = document.getElementById('hint');
+    h.textContent = 'Touch and drag to move the light.';
+  }
+
+  /* ---------- the light ---------- */
+  const secrets = [...document.querySelectorAll('.secret')];
+  let tx = innerWidth * .62, ty = innerHeight * .42, cx = tx, cy = ty;
+  let lastMove = -1e9;
+  addEventListener('pointermove', e => { tx = e.clientX; ty = e.clientY; lastMove = performance.now(); }, {passive:true});
+  addEventListener('pointerdown', e => { tx = e.clientX; ty = e.clientY; lastMove = performance.now(); }, {passive:true});
+  function setR(){ root.style.setProperty('--r', Math.round(Math.max(170, Math.min(300, innerWidth * .2))) + 'px'); }
+  setR(); addEventListener('resize', setR);
+
+  function frame(t){
+    if (!reduce && t - lastMove > 4000){
+      // idle: the light drifts on its own, slowly
+      const s = t / 1000;
+      tx = innerWidth * (.5 + .28 * Math.sin(s * .23));
+      ty = innerHeight * (.45 + .2 * Math.sin(s * .31 + 1.3));
+    }
+    const k = reduce ? 1 : .07;
+    cx += (tx - cx) * k; cy += (ty - cy) * k;
+    root.style.setProperty('--x', cx + 'px');
+    root.style.setProperty('--y', cy + 'px');
+    for (const el of secrets){
+      const r = el.getBoundingClientRect();
+      el.style.setProperty('--sx', (cx - r.left) + 'px');
+      el.style.setProperty('--sy', (cy - r.top) + 'px');
+    }
+    requestAnimationFrame(frame);
+  }
+  requestAnimationFrame(frame);
+
+  /* ---------- board: the only colour on the page ---------- */
+  const C = {t:'#3EE6C4', v:'#8B6CFF', m:'#FF4FA3', a:'#FFB547', s:'#4FB6FF'};
+  const pattern = [
+    '..a....',
+    '.vv..s.',
+    '.v..tt.',
+    'mm..t..',
+    'm.aa..s',
+    '..a.vv.',
+    'tt...m.'
+  ];
+  const board = document.getElementById('board');
+  pattern.forEach((row, y) => [...row].forEach((ch, x) => {
+    const d = document.createElement('div');
+    if (ch === '.') d.className = 'cell e';
+    else {
+      d.className = 'cell f';
+      d.style.setProperty('--c', C[ch]);
+      d.style.setProperty('--d', (Math.random() * 1.2 + (x + y) * .04).toFixed(2) + 's');
+    }
+    board.appendChild(d);
+  }));
+  if ('IntersectionObserver' in window){
+    new IntersectionObserver((es, o) => es.forEach(e => {
+      if (e.isIntersecting){ board.classList.add('lit'); o.disconnect(); }
+    }), {threshold:.45}).observe(board);
+  } else board.classList.add('lit');
+
+  /* ---------- surface out of the fog ---------- */
+  requestAnimationFrame(() => setTimeout(() => document.body.classList.add('ready'), 250));
+})();
+</script>
+</body>
+</html>
